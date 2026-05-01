@@ -18,6 +18,9 @@ import {
 // World Atlas TopoJSON URL - using a CDN-hosted version
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+// Threshold for showing full details (countries below this show "<$700K/mo")
+const GDP_THRESHOLD = 700000;
+
 interface WorldMapProps {
   countries: CountryWithMetrics[];
   selectedCountry: string | null;
@@ -144,14 +147,17 @@ export function WorldMap({
 
       if (country) {
         const metrics = country.metrics;
+        const gdp = metrics?.agent_gdp_usd_month;
+        const isBelowThreshold = gdp !== null && gdp !== undefined && gdp < GDP_THRESHOLD;
+        
         setTooltipData({
           name: country.name,
-          agentGdp: formatCompactUSD(metrics?.agent_gdp_usd_month),
-          employment: formatPercentage(metrics?.employment_pct),
-          topFunctions: metrics?.top_functions || [],
-          medianTax: formatMonthlyUSD(metrics?.median_tax_usd_month),
-          medianRevenue: formatMonthlyUSD(metrics?.median_revenue_usd_month),
-          productivity: formatMultiplier(metrics?.productivity_multiplier),
+          agentGdp: isBelowThreshold ? "<$700K/mo" : formatCompactUSD(gdp),
+          employment: isBelowThreshold ? "—" : formatPercentage(metrics?.employment_pct),
+          topFunctions: isBelowThreshold ? [] : (metrics?.top_functions || []),
+          medianTax: isBelowThreshold ? "—" : formatMonthlyUSD(metrics?.median_tax_usd_month),
+          medianRevenue: isBelowThreshold ? "—" : formatMonthlyUSD(metrics?.median_revenue_usd_month),
+          productivity: isBelowThreshold ? "—" : formatMultiplier(metrics?.productivity_multiplier),
         });
         setTooltipPosition({ x: event.clientX, y: event.clientY });
       }

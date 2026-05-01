@@ -2,35 +2,20 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CountryWithMetrics } from "@/lib/types";
 
-// Countries to exclude from the public API (controversial or included in parent country)
-const EXCLUDED_ISO3 = [
-  "RUS", // Russia
-  "TWN", // Taiwan (part of China dispute)
-  "PRK", // North Korea
-  "PSE", // Palestine
-  "VEN", // Venezuela
-  "AFG", // Afghanistan
-  "LBY", // Libya
-  "SYR", // Syria
-  "HKG", // Hong Kong (included in China)
-  "MAC", // Macau (included in China)
-];
-
 /**
  * GET /api/economy/countries
  *
- * Returns countries with their latest metric snapshot.
- * Excludes controversial countries and those without data.
+ * Returns all countries with their latest metric snapshot.
+ * Countries with GDP < $700K will show on map but not in table details.
  */
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Get all countries except excluded ones
+    // Get all countries
     const { data: countries, error: countriesError } = await supabase
       .from("countries")
       .select("*")
-      .not("iso3", "in", `(${EXCLUDED_ISO3.join(",")})`)
       .order("name", { ascending: true });
 
     if (countriesError) {
@@ -65,7 +50,7 @@ export async function GET() {
     }
 
     // Combine countries with their metrics
-    // Only include countries that have actual metric data (agent_gdp_usd_month is not null)
+    // Include all countries with any GDP data (map shows all, table filters by $700K threshold)
     const countriesWithMetrics: CountryWithMetrics[] = (countries || [])
       .map((country) => ({
         ...country,
@@ -73,8 +58,7 @@ export async function GET() {
       }))
       .filter((country) => 
         country.metrics?.agent_gdp_usd_month !== null && 
-        country.metrics?.agent_gdp_usd_month !== undefined &&
-        country.metrics?.agent_gdp_usd_month > 0
+        country.metrics?.agent_gdp_usd_month !== undefined
       );
 
     return NextResponse.json(countriesWithMetrics);

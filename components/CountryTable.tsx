@@ -22,6 +22,9 @@ interface CountryTableProps {
   onSelectCountry: (iso3: string | null) => void;
 }
 
+// Threshold for showing full details in table (countries below this only show on map)
+const TABLE_GDP_THRESHOLD = 700000;
+
 type SortKey =
   | "rank"
   | "name"
@@ -48,15 +51,17 @@ export function CountryTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const selectedRowRef = useRef<HTMLTableRowElement>(null);
 
-  // Sort and rank countries
+  // Sort and rank countries - only show countries with GDP >= $700K in table
   const rankedCountries = useMemo(() => {
-    // First, separate countries with and without Agent GDP
+    // Filter to only countries above the threshold
     const withData = countries.filter(
-      (c) => c.metrics?.agent_gdp_usd_month !== null && c.metrics?.agent_gdp_usd_month !== undefined
+      (c) => 
+        c.metrics?.agent_gdp_usd_month !== null && 
+        c.metrics?.agent_gdp_usd_month !== undefined &&
+        c.metrics.agent_gdp_usd_month >= TABLE_GDP_THRESHOLD
     );
-    const withoutData = countries.filter(
-      (c) => c.metrics?.agent_gdp_usd_month === null || c.metrics?.agent_gdp_usd_month === undefined
-    );
+    // No "without data" section - countries below threshold don't show in table
+    const withoutData: CountryWithMetrics[] = [];
 
     // Sort countries with data by Agent GDP descending
     withData.sort(

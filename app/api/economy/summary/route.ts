@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { EconomySummary } from "@/lib/types";
 
-// Countries to exclude from tracking (same as in countries API)
-const EXCLUDED_ISO3 = [
-  "RUS", "TWN", "PRK", "PSE", "VEN", "AFG", "LBY", "SYR", "HKG", "MAC"
-];
+// Threshold for counting in "countries tracked" (same as table threshold)
+const GDP_THRESHOLD = 700000;
 
 /**
  * GET /api/economy/summary
@@ -15,18 +13,17 @@ const EXCLUDED_ISO3 = [
  * - median_tax_usd_month: Median of all countries' median tax
  * - median_revenue_usd_month: Median of all countries' median revenue
  * - average_productivity_multiplier: Average productivity across countries
- * - countries_tracked: Number of countries with data (excluding controversial ones)
+ * - countries_tracked: Number of countries with GDP >= $700K
  * - last_updated: Most recent metric update timestamp
  */
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Get count of non-excluded countries
-    const { count: countriesTracked, error: countError } = await supabase
+    // Get all countries count (we'll calculate countries_with_data from metrics)
+    const { count: totalCountries, error: countError } = await supabase
       .from("countries")
-      .select("*", { count: "exact", head: true })
-      .not("iso3", "in", `(${EXCLUDED_ISO3.join(",")})`);
+      .select("*", { count: "exact", head: true });
 
     if (countError) {
       console.error("Error counting countries:", countError);
@@ -60,12 +57,11 @@ export async function GET() {
 
     const latestMetrics = Array.from(latestByCountry.values());
 
-    // Calculate aggregates - only count non-excluded countries with actual data
+    // Calculate aggregates - only count countries with GDP >= $700K threshold
     const countriesWithData = latestMetrics.filter(
       (m) => 
         m.agent_gdp_usd_month !== null && 
-        m.agent_gdp_usd_month > 0 &&
-        !EXCLUDED_ISO3.includes(m.country_iso3)
+        m.agent_gdp_usd_month >= GDP_THRESHOLD
     ).length;
 
     // Sum of Agent GDP
@@ -118,7 +114,7 @@ export async function GET() {
       median_tax_usd_month: medianTax,
       median_revenue_usd_month: medianRevenue,
       average_productivity_multiplier: avgProductivity,
-      countries_tracked: countriesTracked || 0,
+      countries_tracked: totalCountries || 0,
       countries_with_data: countriesWithData,
       last_updated: lastUpdated,
     };
