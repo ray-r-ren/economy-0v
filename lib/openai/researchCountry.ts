@@ -157,35 +157,32 @@ Return null for any metric without supporting evidence.
 Focus on ${countryName} specifically, not global data.`;
 
   try {
-    const response = await openai.responses.create({
+    // Use Chat Completions API with structured outputs
+    const response = await openai.chat.completions.create({
       model,
-      input: [
+      messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      tools: [{ type: "web_search" }],
-      text: {
-        format: {
-          type: "json_schema",
+      response_format: {
+        type: "json_schema",
+        json_schema: {
           name: "research_output",
           schema: researchOutputSchema,
           strict: true,
         },
       },
+      temperature: 0.3,
+      max_tokens: 4096,
     });
 
-    // Extract the text content from the response
-    const textOutput = response.output.find((o) => o.type === "message");
-    if (!textOutput || textOutput.type !== "message") {
-      throw new Error("No text output from OpenAI");
+    // Extract the content from the response
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No content in OpenAI response");
     }
 
-    const content = textOutput.content.find((c) => c.type === "output_text");
-    if (!content || content.type !== "output_text") {
-      throw new Error("No text content in response");
-    }
-
-    const parsed = JSON.parse(content.text) as ResearchOutput;
+    const parsed = JSON.parse(content) as ResearchOutput;
 
     // Ensure country_iso3 is set correctly
     parsed.country_iso3 = countryIso3;
