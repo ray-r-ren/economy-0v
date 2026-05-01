@@ -158,61 +158,35 @@ Return null for any metric without supporting evidence.
 
 Focus on ${countryName} specifically, not global data.`;
 
-  try {
-    console.log(`[v0] Starting OpenAI research for ${countryName} with model ${model}`);
-    
-    // Use Chat Completions API with JSON mode (simpler than strict schema)
-    const response = await openai.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { 
-          role: "user", 
-          content: `${userPrompt}\n\nRespond with a JSON object matching this structure:\n${JSON.stringify(researchOutputSchema, null, 2)}` 
-        },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.3,
-      max_completion_tokens: 4096,
-    });
-
-    console.log(`[v0] OpenAI response received for ${countryName}`);
-
-    // Extract the content from the response
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("No content in OpenAI response");
-    }
-
-    console.log(`[v0] Parsing JSON response for ${countryName}`);
-    const parsed = JSON.parse(content) as ResearchOutput;
-
-    // Ensure country_iso3 is set correctly
-    parsed.country_iso3 = countryIso3;
-
-    return parsed;
-  } catch (error) {
-    console.error(`Error researching country ${countryName}:`, error);
-
-    // Return empty research output on error
-    return {
-      country_iso3: countryIso3,
-      evidence_items: [] as EvidenceItem[],
-      estimated_active_agent_users: null,
-      agent_gdp_components: {
-        agent_assisted_work_value_usd_month: null,
-        agent_generated_revenue_usd_month: null,
-        agent_service_revenue_usd_month: null,
-        agent_asset_revenue_usd_month: null,
+  console.log(`[v0] Starting OpenAI research for ${countryName} with model ${model}`);
+  
+  // Use Chat Completions API with JSON mode (simpler than strict schema)
+  const response = await openai.chat.completions.create({
+    model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { 
+        role: "user", 
+        content: `${userPrompt}\n\nRespond with a JSON object matching this structure:\n${JSON.stringify(researchOutputSchema, null, 2)}` 
       },
-      employment_pct: null,
-      deployed_agent_work_signals: null,
-      total_relevant_digital_work_signals: null,
-      top_functions: [],
-      median_tax_usd_month: null,
-      median_revenue_usd_month: null,
-      confidence_score: 0,
-      notes: `Research failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-    };
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.3,
+  });
+
+  console.log(`[v0] OpenAI response received for ${countryName}`);
+
+  // Extract the content from the response
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error("No content in OpenAI response");
   }
+
+  console.log(`[v0] Parsing JSON response for ${countryName}`);
+  const parsed = JSON.parse(content) as ResearchOutput;
+
+  // Ensure country_iso3 is set correctly
+  parsed.country_iso3 = countryIso3;
+
+  return parsed;
 }

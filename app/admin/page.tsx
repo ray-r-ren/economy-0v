@@ -176,7 +176,7 @@ export default function AdminPage() {
                           <span className="text-emerald-400">Success</span>
                         )}
                         {result.status === "error" && (
-                          <span className="text-red-400" title={result.error}>Error</span>
+                          <span className="text-red-400">Error: {result.error}</span>
                         )}
                       </td>
                       <td className="p-3 text-sm">
