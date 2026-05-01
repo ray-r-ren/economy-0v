@@ -7,7 +7,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Economy | Forsy',
+  title: 'Agent Economy | Forsy',
   description: 'Tracking the emerging agent economy across countries. Built from public web signals, nowcast estimates, and source-weighted calculations.',
   generator: 'Forsy',
   icons: {
