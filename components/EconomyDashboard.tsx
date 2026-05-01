@@ -6,7 +6,6 @@ import { EconomyHero } from "@/components/EconomyHero";
 import { SummaryCards } from "@/components/SummaryCards";
 import { WorldMap } from "@/components/WorldMap";
 import { CountryTable } from "@/components/CountryTable";
-import { MethodologyPanel } from "@/components/MethodologyPanel";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import type { CountryWithMetrics, EconomySummary } from "@/lib/types";
@@ -91,11 +90,6 @@ export function EconomyDashboard() {
           selectedCountry={selectedCountry}
           onSelectCountry={setSelectedCountry}
         />
-      </section>
-
-      {/* Methodology */}
-      <section className="mt-12">
-        <MethodologyPanel />
       </section>
     </div>
   );
