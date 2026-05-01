@@ -173,7 +173,7 @@ Focus on ${countryName} specifically, not global data.`;
       ],
       response_format: { type: "json_object" },
       temperature: 0.3,
-      max_tokens: 4096,
+      max_completion_tokens: 4096,
     });
 
     console.log(`[v0] OpenAI response received for ${countryName}`);
