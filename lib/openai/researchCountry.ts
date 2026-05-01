@@ -1,5 +1,6 @@
+// OpenAI research module - updated to remove max_tokens parameter
 import OpenAI from "openai";
-import type { ResearchOutput, EvidenceItem } from "@/lib/types";
+import type { ResearchOutput } from "@/lib/types";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -165,14 +166,15 @@ Focus on ${countryName} specifically, not global data.`;
 
   console.log(`[v0] Starting OpenAI research for ${countryName} with model ${model}`);
   
-  // Use Chat Completions API with JSON mode (simpler than strict schema)
+  // Use Chat Completions API with JSON mode
+  // Note: Do NOT use max_tokens or max_completion_tokens - let it use defaults
   const response = await openai.chat.completions.create({
     model,
     messages: [
       { role: "system", content: systemPrompt },
       { 
         role: "user", 
-        content: `${userPrompt}\n\nRespond with a JSON object matching this structure:\n${JSON.stringify(researchOutputSchema, null, 2)}` 
+        content: `${userPrompt}\n\nRespond with a valid JSON object. Include these fields: country_iso3, evidence_items (array), estimated_active_agent_users (number or null), agent_gdp_components (object with agent_assisted_work_value_usd_month, agent_generated_revenue_usd_month, agent_service_revenue_usd_month, agent_asset_revenue_usd_month), employment_pct (number or null), deployed_agent_work_signals (number or null), total_relevant_digital_work_signals (number or null), top_functions (array of strings), median_tax_usd_month (number or null), median_revenue_usd_month (number or null), confidence_score (number 0-1), notes (string).` 
       },
     ],
     response_format: { type: "json_object" },
