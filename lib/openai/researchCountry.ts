@@ -5,23 +5,28 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// JSON Schema for structured output
+// Helper for nullable number type in JSON schema
+const nullableNumber = {
+  anyOf: [{ type: "number" }, { type: "null" }],
+};
+
+// JSON Schema for structured output (OpenAI strict mode compatible)
 const researchOutputSchema = {
-  type: "object" as const,
+  type: "object",
   properties: {
-    country_iso3: { type: "string" as const },
+    country_iso3: { type: "string" },
     evidence_items: {
-      type: "array" as const,
+      type: "array",
       items: {
-        type: "object" as const,
+        type: "object",
         properties: {
-          source_url: { type: "string" as const },
-          source_title: { type: "string" as const },
-          source_type: { type: "string" as const },
-          signal_type: { type: "string" as const },
-          extracted_claim: { type: "string" as const },
-          numeric_value: { type: ["number", "null"] as const },
-          confidence: { type: "number" as const },
+          source_url: { type: "string" },
+          source_title: { type: "string" },
+          source_type: { type: "string" },
+          signal_type: { type: "string" },
+          extracted_claim: { type: "string" },
+          numeric_value: nullableNumber,
+          confidence: { type: "number" },
         },
         required: [
           "source_url",
@@ -29,23 +34,20 @@ const researchOutputSchema = {
           "source_type",
           "signal_type",
           "extracted_claim",
+          "numeric_value",
           "confidence",
         ],
         additionalProperties: false,
       },
     },
-    estimated_active_agent_users: { type: ["number", "null"] as const },
+    estimated_active_agent_users: nullableNumber,
     agent_gdp_components: {
-      type: "object" as const,
+      type: "object",
       properties: {
-        agent_assisted_work_value_usd_month: {
-          type: ["number", "null"] as const,
-        },
-        agent_generated_revenue_usd_month: {
-          type: ["number", "null"] as const,
-        },
-        agent_service_revenue_usd_month: { type: ["number", "null"] as const },
-        agent_asset_revenue_usd_month: { type: ["number", "null"] as const },
+        agent_assisted_work_value_usd_month: nullableNumber,
+        agent_generated_revenue_usd_month: nullableNumber,
+        agent_service_revenue_usd_month: nullableNumber,
+        agent_asset_revenue_usd_month: nullableNumber,
       },
       required: [
         "agent_assisted_work_value_usd_month",
@@ -55,17 +57,17 @@ const researchOutputSchema = {
       ],
       additionalProperties: false,
     },
-    employment_pct: { type: ["number", "null"] as const },
-    deployed_agent_work_signals: { type: ["number", "null"] as const },
-    total_relevant_digital_work_signals: { type: ["number", "null"] as const },
+    employment_pct: nullableNumber,
+    deployed_agent_work_signals: nullableNumber,
+    total_relevant_digital_work_signals: nullableNumber,
     top_functions: {
-      type: "array" as const,
-      items: { type: "string" as const },
+      type: "array",
+      items: { type: "string" },
     },
-    median_tax_usd_month: { type: ["number", "null"] as const },
-    median_revenue_usd_month: { type: ["number", "null"] as const },
-    confidence_score: { type: "number" as const },
-    notes: { type: "string" as const },
+    median_tax_usd_month: nullableNumber,
+    median_revenue_usd_month: nullableNumber,
+    confidence_score: { type: "number" },
+    notes: { type: "string" },
   },
   required: [
     "country_iso3",
@@ -157,24 +159,24 @@ Return null for any metric without supporting evidence.
 Focus on ${countryName} specifically, not global data.`;
 
   try {
-    // Use Chat Completions API with structured outputs
+    console.log(`[v0] Starting OpenAI research for ${countryName} with model ${model}`);
+    
+    // Use Chat Completions API with JSON mode (simpler than strict schema)
     const response = await openai.chat.completions.create({
       model,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "research_output",
-          schema: researchOutputSchema,
-          strict: true,
+        { 
+          role: "user", 
+          content: `${userPrompt}\n\nRespond with a JSON object matching this structure:\n${JSON.stringify(researchOutputSchema, null, 2)}` 
         },
-      },
+      ],
+      response_format: { type: "json_object" },
       temperature: 0.3,
       max_tokens: 4096,
     });
+
+    console.log(`[v0] OpenAI response received for ${countryName}`);
 
     // Extract the content from the response
     const content = response.choices[0]?.message?.content;
@@ -182,6 +184,7 @@ Focus on ${countryName} specifically, not global data.`;
       throw new Error("No content in OpenAI response");
     }
 
+    console.log(`[v0] Parsing JSON response for ${countryName}`);
     const parsed = JSON.parse(content) as ResearchOutput;
 
     // Ensure country_iso3 is set correctly
