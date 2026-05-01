@@ -104,7 +104,12 @@ export async function researchCountry(
   countryName: string,
   countryIso3: string
 ): Promise<ResearchOutput> {
-  const model = process.env.OPENAI_MODEL || "gpt-4o";
+  // Use a known working model - gpt-4o-mini is fast and cheap
+  const envModel = process.env.OPENAI_MODEL;
+  const validModels = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"];
+  const model = envModel && validModels.includes(envModel) ? envModel : "gpt-4o-mini";
+  
+  console.log(`[v0] OPENAI_MODEL env: "${envModel}", using model: "${model}"`);
 
   const systemPrompt = `You are an expert economic researcher analyzing the emerging agent economy across countries.
 
