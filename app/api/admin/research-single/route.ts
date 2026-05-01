@@ -41,6 +41,9 @@ export async function POST(request: Request) {
     console.log(`[v0] Researching ${name} (${iso3})...`);
     const researchResult = await researchCountry(name, iso3);
 
+    // Log raw research result to see what OpenAI returns
+    console.log(`[v0] Raw research result for ${name}:`, JSON.stringify(researchResult, null, 2));
+
     if (!researchResult) {
       return NextResponse.json({
         success: true,
@@ -51,8 +54,14 @@ export async function POST(request: Request) {
       });
     }
 
+    // Log agent_gdp_components specifically
+    console.log(`[v0] GDP components for ${name}:`, researchResult.agent_gdp_components);
+
     // Calculate metrics
     const metrics = calculateCountryMetrics(researchResult);
+    
+    // Log calculated metrics
+    console.log(`[v0] Calculated metrics for ${name}:`, metrics);
 
     // Get current month
     const now = new Date();
