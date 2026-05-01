@@ -123,6 +123,36 @@ For poor/underdeveloped countries, values should be $1K-10K/month.
 For microstates (<500K pop), values should be $2K-50K/month MAX.
 For small Gulf states, values should be $500K-2M/month MAX.
 
+TOP FUNCTIONS - Use ONLY these exact short tags (pick 2-3 most relevant for THIS specific country):
+- "Coding" - Software dev, engineering (tech hubs like USA, India, Israel)
+- "Sales" - Sales automation, outreach (commercial economies)
+- "Research" - Data analysis, academic (countries with universities, R&D)
+- "Support" - Customer service (outsourcing hubs like Philippines, India)
+- "Marketing" - Content, ads, social (consumer economies)
+- "Finance" - Banking, trading (financial centers like UK, Singapore, Switzerland)
+- "Operations" - Workflow automation (manufacturing countries like Germany, Japan, China)
+- "Legal" - Contract analysis (USA, UK, Western Europe)
+- "Recruiting" - HR automation (large corporate economies)
+- "Design" - Creative AI (design-focused economies)
+- "Content" - Writing, media (media hubs)
+- "Healthcare" - Medical AI (countries with advanced healthcare)
+- "E-commerce" - Online retail (China, USA, UK)
+- "Manufacturing" - Industrial AI (China, Germany, Japan, Korea)
+
+COUNTRY-SPECIFIC FUNCTION EXAMPLES:
+- USA: "Coding", "Sales", "Legal" (tech + commercial + legal)
+- China: "Manufacturing", "E-commerce", "Coding"
+- Germany: "Manufacturing", "Operations", "Research"
+- UK: "Finance", "Legal", "Marketing"
+- India: "Coding", "Support", "Research"
+- Japan: "Manufacturing", "Operations", "Coding"
+- Singapore: "Finance", "Operations", "E-commerce"
+- Brazil: "E-commerce", "Marketing", "Support"
+- Philippines: "Support", "Content", "Sales"
+- Switzerland: "Finance", "Research", "Healthcare"
+
+DO NOT use long descriptions like "Software development and code assistance". Use ONLY the short tags above.
+
 Return ONLY valid JSON:
 {
   "country_iso3": "${countryIso3}",
@@ -137,7 +167,7 @@ Return ONLY valid JSON:
   "employment_pct": <percentage>,
   "deployed_agent_work_signals": <number>,
   "total_relevant_digital_work_signals": <number>,
-  "top_functions": ["Function1", "Function2", "Function3"],
+  "top_functions": ["Tag1", "Tag2", "Tag3"],
   "median_tax_usd_month": <$5-300>,
   "median_revenue_usd_month": <$10-2500>,
   "confidence_score": 0.65,
