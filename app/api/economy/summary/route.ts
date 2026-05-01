@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { EconomySummary } from "@/lib/types";
 
+// Countries to exclude from tracking (same as in countries API)
+const EXCLUDED_ISO3 = [
+  "RUS", "TWN", "PRK", "PSE", "VEN", "AFG", "LBY", "SYR", "HKG", "MAC"
+];
+
 /**
  * GET /api/economy/summary
  *
@@ -10,18 +15,18 @@ import type { EconomySummary } from "@/lib/types";
  * - median_tax_usd_month: Median of all countries' median tax
  * - median_revenue_usd_month: Median of all countries' median revenue
  * - average_productivity_multiplier: Average productivity across countries
- * - countries_tracked: Total number of countries in the system
- * - countries_with_data: Countries that have metric data
+ * - countries_tracked: Number of countries with data (excluding controversial ones)
  * - last_updated: Most recent metric update timestamp
  */
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Get total country count
+    // Get count of non-excluded countries
     const { count: countriesTracked, error: countError } = await supabase
       .from("countries")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .not("iso3", "in", `(${EXCLUDED_ISO3.join(",")})`);
 
     if (countError) {
       console.error("Error counting countries:", countError);
@@ -55,9 +60,12 @@ export async function GET() {
 
     const latestMetrics = Array.from(latestByCountry.values());
 
-    // Calculate aggregates
+    // Calculate aggregates - only count non-excluded countries with actual data
     const countriesWithData = latestMetrics.filter(
-      (m) => m.agent_gdp_usd_month !== null
+      (m) => 
+        m.agent_gdp_usd_month !== null && 
+        m.agent_gdp_usd_month > 0 &&
+        !EXCLUDED_ISO3.includes(m.country_iso3)
     ).length;
 
     // Sum of Agent GDP

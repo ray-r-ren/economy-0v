@@ -1,6 +1,6 @@
 /**
  * OpenAI Research Module for Agent Economy
- * Uses GPT-4o for accurate research estimates
+ * Uses GPT-5-mini for accurate research estimates
  */
 import OpenAI from "openai";
 import type { ResearchOutput } from "@/lib/types";
@@ -37,7 +37,7 @@ export async function researchCountry(
     return null;
   }
 
-  const model = "gpt-4o";
+  const model = "gpt-5-mini";
 
   const systemPrompt = `You are an expert economic analyst specializing in AI and technology markets.
 Estimate AI agent economy metrics for countries based on their actual economic indicators.
@@ -104,7 +104,7 @@ Return ONLY a valid JSON object:
   "notes": "Tier X - brief reasoning"
 }`;
 
-  console.log(`[v0] Calling GPT-4o for ${countryName}`);
+  console.log(`[v0] Calling GPT-5-mini for ${countryName}`);
 
   const response = await openai.chat.completions.create({
     model,

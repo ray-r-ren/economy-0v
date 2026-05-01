@@ -100,8 +100,8 @@ export function SummaryCards({ summary, isLoading }: SummaryCardsProps) {
       <SummaryCard
         label="Countries Tracked"
         value={
-          summary?.countries_tracked
-            ? `${summary.countries_with_data}/${summary.countries_tracked}`
+          summary?.countries_with_data
+            ? `${summary.countries_with_data}`
             : "No Data Yet"
         }
         icon={<MapPin className="h-4 w-4" />}
