@@ -113,7 +113,6 @@ Return ONLY a valid JSON object:
       { role: "user", content: userPrompt },
     ],
     response_format: { type: "json_object" },
-    temperature: 0.2,
   });
 
   const content = response.choices[0]?.message?.content;
