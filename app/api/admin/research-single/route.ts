@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import { researchCountry } from "@/lib/openai/researchCountry";
 import { calculateCountryMetrics } from "@/lib/metrics/calculateCountryMetrics";
 
 export const maxDuration = 60; // 60 second timeout per country
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
 export async function POST(request: Request) {
+  console.log("[v0] research-single endpoint called");
+  
   try {
-    const { iso3, name } = await request.json();
+    const body = await request.json();
+    console.log("[v0] Request body:", body);
+    
+    const { iso3, name } = body;
 
     if (!iso3 || !name) {
+      console.log("[v0] Missing iso3 or name");
       return NextResponse.json(
         { success: false, error: "Missing iso3 or name" },
         { status: 400 }
@@ -18,13 +27,15 @@ export async function POST(request: Request) {
 
     // Check if OpenAI is configured
     if (!process.env.OPENAI_API_KEY) {
+      console.log("[v0] OPENAI_API_KEY not configured");
       return NextResponse.json(
         { success: false, error: "OPENAI_API_KEY not configured" },
         { status: 500 }
       );
     }
 
-    const supabase = await createClient();
+    console.log("[v0] Creating Supabase client...");
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Research this country
     console.log(`[v0] Researching ${name} (${iso3})...`);
