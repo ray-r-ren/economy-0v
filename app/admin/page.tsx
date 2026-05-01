@@ -26,7 +26,10 @@ export default function AdminPage() {
       // First, get all countries
       const countriesRes = await fetch("/api/economy/countries");
       const countriesData = await countriesRes.json();
-      const countries = countriesData.countries || [];
+      // API returns array directly, not wrapped in { countries: [...] }
+      const countries = Array.isArray(countriesData) ? countriesData : (countriesData.countries || []);
+      
+      console.log("[v0] Fetched countries:", countries.length);
       
       setTotal(countries.length);
       
