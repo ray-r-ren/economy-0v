@@ -15,18 +15,19 @@ interface ColumnInfoTooltipProps {
 
 export function ColumnInfoTooltip({ label, caption }: ColumnInfoTooltipProps) {
   return (
-    <div className="flex items-center gap-1.5">
+    <span className="inline-flex items-center gap-1.5">
       <span>{label}</span>
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
+            <span
+              role="button"
+              tabIndex={0}
+              className="inline-flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors cursor-help"
               aria-label={`Info about ${label}`}
             >
               <Info className="h-3.5 w-3.5" />
-            </button>
+            </span>
           </TooltipTrigger>
           <TooltipContent
             side="top"
@@ -36,6 +37,6 @@ export function ColumnInfoTooltip({ label, caption }: ColumnInfoTooltipProps) {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    </div>
+    </span>
   );
 }
