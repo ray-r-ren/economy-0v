@@ -29,83 +29,96 @@ export async function researchCountry(
 
   const model = "gpt-5.1";
 
-  const systemPrompt = `You are an expert economic analyst. Estimate AI agent economy metrics based on REALISTIC economic data.
+  const systemPrompt = `You are an expert economic analyst estimating AI agent economy metrics.
 
-CRITICAL: The agent economy is NASCENT and CONCENTRATED in wealthy tech hubs. Most countries have MINIMAL agent adoption.
+CRITICAL CONTEXT: The "agent economy" is EXTREMELY NEW (2024-2026) and almost entirely concentrated in Silicon Valley, London, and a handful of global tech hubs. Most of the world has NEGLIGIBLE agent adoption.
 
-ABSOLUTE REFERENCE POINTS (monthly):
-- USA: $4.2B Agent GDP, 18% employment, $287 tax, $2340 revenue (THE GLOBAL LEADER)
-- UK: $890M (21% of USA)
-- Germany: $720M (17% of USA)  
-- Japan: $680M (16% of USA)
-- China: $2.1B (50% of USA due to scale)
+ABSOLUTE ANCHORS (use these as your reference):
+- USA: $4.2B/month - This is THE global leader with 80%+ of agent economy activity
+- China: $800M/month - Large scale but lower per-capita adoption
+- UK: $400M/month - Strong fintech/AI hub
+- Germany: $300M/month - Industrial AI adoption
+- All other countries COMBINED: ~$500M/month
 
-TIER CLASSIFICATION WITH REALISTIC MULTIPLIERS:
+REALISTIC TIER SYSTEM:
 
-TIER 1 - USA Only: 
-  Agent GDP: $4-5B/mo
+TIER 1 - USA ONLY:
+  Agent GDP: $3-5 BILLION/month
+  Employment: 15-20%
+  This is where OpenAI, Anthropic, Google AI, etc. are based
 
-TIER 2 - Major Tech Powers (China, UK, Germany, Japan):
-  Agent GDP: $500M-2B/mo (10-50% of USA)
+TIER 2 - Major Tech Powers (China, UK, Germany, Japan, Canada, France):
+  Agent GDP: $100-800 MILLION/month
+  Employment: 5-12%
 
-TIER 3 - Advanced Economies (France, Canada, Australia, S.Korea, Netherlands, Switzerland, Israel, Singapore, Sweden, Ireland):
-  Agent GDP: $100M-400M/mo (2-10% of USA)
+TIER 3 - Advanced Small Economies (Australia, Netherlands, Israel, Singapore, S.Korea, Sweden, Switzerland):
+  Agent GDP: $30-150 MILLION/month
+  Employment: 4-10%
 
-TIER 4 - Strong Economies (Spain, Italy, Belgium, Austria, Poland, Norway, Denmark, Finland, NZ, Taiwan):
-  Agent GDP: $30M-100M/mo (0.7-2.5% of USA)
+TIER 4 - Developed Economies (Spain, Italy, Belgium, Austria, Ireland, Norway, Denmark, Finland, NZ):
+  Agent GDP: $10-50 MILLION/month
+  Employment: 2-6%
 
-TIER 5 - Upper-Middle Economies (India, Brazil, Mexico, Turkey, Indonesia, Thailand, Malaysia, UAE, Saudi):
-  Agent GDP: $10M-50M/mo (0.2-1.2% of USA)
+TIER 5 - Large Emerging (India, Brazil):
+  Agent GDP: $20-80 MILLION/month (large population offsets low per-capita)
+  Employment: 1-4%
 
-TIER 6 - Middle Economies (Vietnam, Philippines, South Africa, Egypt, Colombia, Chile, Argentina, Poland, Czech):
-  Agent GDP: $3M-15M/mo (0.07-0.4% of USA)
+TIER 6 - Upper-Middle Markets (Mexico, Poland, Turkey, UAE, Saudi, Thailand, Malaysia, Indonesia):
+  Agent GDP: $5-25 MILLION/month
+  Employment: 1-3%
 
-TIER 7 - Emerging Markets (Nigeria, Kenya, Pakistan, Bangladesh, Peru, Morocco, Romania, Hungary):
-  Agent GDP: $500K-5M/mo (0.01-0.12% of USA)
+TIER 7 - Middle Markets (Vietnam, Philippines, South Africa, Egypt, Colombia, Chile, Argentina, Czech, Romania):
+  Agent GDP: $1-8 MILLION/month
+  Employment: 0.5-2%
 
-TIER 8 - Frontier/Small Markets (Albania, Algeria, most of Africa, Central Asia, Caribbean, Pacific):
-  Agent GDP: $50K-1M/mo (0.001-0.02% of USA)
+TIER 8 - Emerging Markets (Nigeria, Kenya, Pakistan, Bangladesh, Peru, Morocco, Hungary, Ukraine):
+  Agent GDP: $200K-3 MILLION/month
+  Employment: 0.2-1%
 
-KEY PRINCIPLE: A country's agent GDP roughly correlates with:
-- Its nominal GDP (smaller GDP = smaller agent economy)
-- Its tech sector maturity (no tech sector = almost no agent economy)
-- Its internet/cloud adoption rates
-- English proficiency and global tech integration
+TIER 9 - Frontier Markets (Albania, Algeria, most African countries, Central Asia, Caribbean, Pacific islands):
+  Agent GDP: $10K-300K/month
+  Employment: 0.05-0.5%
+  These countries have almost NO meaningful agent economy - just a few individual freelancers
 
-Albania ($18B GDP) should be ~$200K-500K/mo agent GDP (TIER 8)
-Algeria ($190B GDP) should be ~$1M-3M/mo agent GDP (TIER 7-8)
-Nigeria ($477B GDP, large population) should be ~$3M-8M/mo (TIER 7)`;
+SPECIFIC EXAMPLES:
+- Albania (3M population, $18B GDP, minimal tech): $20K-50K/month MAXIMUM
+- Algeria (45M population, $190B GDP, very limited tech): $50K-150K/month MAXIMUM  
+- Nigeria (220M population, some tech hubs): $1-3M/month
+- Philippines (115M population, BPO industry): $3-6M/month
+- India (1.4B population, major IT sector): $40-70M/month
+
+KEY RULE: If a country doesn't have significant venture capital, tech startups, or cloud computing adoption, its agent GDP should be under $1M/month.`;
 
   const userPrompt = `Estimate AI agent economy for: ${countryName} (ISO: ${countryIso3})
 
-FIRST determine the correct tier based on the country's:
-1. Nominal GDP size
-2. GDP per capita  
-3. Tech sector maturity
-4. Developer population
-5. Internet penetration
+STEP 1: Identify the correct tier (1-9) based on:
+- Population size
+- Nominal GDP and GDP per capita
+- Tech startup ecosystem presence
+- Cloud/AI adoption rates
+- Developer community size
 
-Then provide estimates WITHIN that tier's range. Be CONSERVATIVE.
+STEP 2: Estimate WITHIN that tier's range. When uncertain, use the LOWER end.
 
 Return ONLY valid JSON:
 {
   "country_iso3": "${countryIso3}",
-  "evidence_items": [{"source_url": "https://worldbank.org", "source_title": "Economic indicators", "source_type": "estimate", "signal_type": "economic_analysis", "extracted_claim": "Based on GDP and tech sector data", "numeric_value": null, "confidence": 0.6}],
-  "estimated_active_agent_users": <realistic number based on population and tech adoption>,
+  "evidence_items": [{"source_url": "https://worldbank.org", "source_title": "Economic indicators", "source_type": "estimate", "signal_type": "economic_analysis", "extracted_claim": "Based on GDP and tech sector analysis", "numeric_value": null, "confidence": 0.6}],
+  "estimated_active_agent_users": <number - be conservative>,
   "agent_gdp_components": {
-    "agent_assisted_work_value_usd_month": <50% of total>,
-    "agent_generated_revenue_usd_month": <25% of total>,
-    "agent_service_revenue_usd_month": <20% of total>,
-    "agent_asset_revenue_usd_month": <5% of total>
+    "agent_assisted_work_value_usd_month": <50% of total GDP>,
+    "agent_generated_revenue_usd_month": <25% of total GDP>,
+    "agent_service_revenue_usd_month": <20% of total GDP>,
+    "agent_asset_revenue_usd_month": <5% of total GDP>
   },
-  "employment_pct": <0.5-18 based on tier, most countries under 5%>,
+  "employment_pct": <percentage based on tier>,
   "deployed_agent_work_signals": <number>,
   "total_relevant_digital_work_signals": <number>,
   "top_functions": ["Function1", "Function2", "Function3"],
-  "median_tax_usd_month": <$20-300 based on purchasing power>,
-  "median_revenue_usd_month": <$50-2500 based on tier>,
+  "median_tax_usd_month": <$15-300 based on local purchasing power>,
+  "median_revenue_usd_month": <$30-2500 based on tier>,
   "confidence_score": 0.65,
-  "notes": "Tier X - reasoning"
+  "notes": "Tier X - brief reasoning"
 }`;
 
   console.log(`[v0] Calling GPT-5.1 for ${countryName}`);
