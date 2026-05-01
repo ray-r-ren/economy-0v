@@ -7,7 +7,7 @@ export function EconomyHero() {
         Agent Economy
       </h1>
       <p className="mt-4 max-w-2xl text-lg text-zinc-400 sm:text-xl">
-        Tracking the emerging agent economy across countries.
+        Tracking the global emerging agent economy
       </p>
     </header>
   );
