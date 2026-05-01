@@ -9,10 +9,6 @@ export function EconomyHero() {
       <p className="mt-4 max-w-2xl text-lg text-zinc-400 sm:text-xl">
         Tracking the emerging agent economy across countries.
       </p>
-      <p className="mt-3 max-w-xl text-sm text-zinc-500">
-        Built from public web signals, nowcast estimates, and source-weighted
-        calculations.
-      </p>
     </header>
   );
 }

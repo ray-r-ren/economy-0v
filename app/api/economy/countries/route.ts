@@ -2,20 +2,35 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { CountryWithMetrics } from "@/lib/types";
 
+// Countries to exclude from the public API (controversial or included in parent country)
+const EXCLUDED_ISO3 = [
+  "RUS", // Russia
+  "TWN", // Taiwan (part of China dispute)
+  "PRK", // North Korea
+  "PSE", // Palestine
+  "VEN", // Venezuela
+  "AFG", // Afghanistan
+  "LBY", // Libya
+  "SYR", // Syria
+  "HKG", // Hong Kong (included in China)
+  "MAC", // Macau (included in China)
+];
+
 /**
  * GET /api/economy/countries
  *
- * Returns all countries with their latest metric snapshot.
- * Uses a LEFT JOIN to ensure all countries are returned, even those without metrics.
+ * Returns countries with their latest metric snapshot.
+ * Excludes controversial countries and those without data.
  */
 export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Get all countries
+    // Get all countries except excluded ones
     const { data: countries, error: countriesError } = await supabase
       .from("countries")
       .select("*")
+      .not("iso3", "in", `(${EXCLUDED_ISO3.join(",")})`)
       .order("name", { ascending: true });
 
     if (countriesError) {
@@ -49,13 +64,18 @@ export async function GET() {
       }
     }
 
-    // Combine countries with their metrics using LEFT JOIN logic
-    const countriesWithMetrics: CountryWithMetrics[] = (countries || []).map(
-      (country) => ({
+    // Combine countries with their metrics
+    // Only include countries that have actual metric data (agent_gdp_usd_month is not null)
+    const countriesWithMetrics: CountryWithMetrics[] = (countries || [])
+      .map((country) => ({
         ...country,
         metrics: country.iso3 ? (latestMetrics.get(country.iso3) ?? null) : null,
-      })
-    );
+      }))
+      .filter((country) => 
+        country.metrics?.agent_gdp_usd_month !== null && 
+        country.metrics?.agent_gdp_usd_month !== undefined &&
+        country.metrics?.agent_gdp_usd_month > 0
+      );
 
     return NextResponse.json(countriesWithMetrics);
   } catch (error) {
