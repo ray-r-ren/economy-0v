@@ -6,20 +6,20 @@ import {
   validateResearchOutput,
 } from "@/lib/metrics/calculateCountryMetrics";
 
-// Maximum countries to process per cron run
-const BATCH_SIZE = 5;
+// Vercel function timeout - set to maximum for Pro plan (300s)
+export const maxDuration = 300;
 
 /**
  * GET /api/cron/update-economy
  *
- * Protected Vercel Cron endpoint that updates economy data.
- * Called daily by Vercel Cron at 5:00 AM UTC.
+ * Protected Vercel Cron endpoint that updates economy data for ALL countries.
+ * Called weekly by Vercel Cron at 5:00 AM UTC on Sundays.
  *
  * Behavior:
  * - If RUN_RESEARCH_CRON is not "true", returns a safe message without calling OpenAI
  * - If RUN_RESEARCH_CRON is "true":
- *   - Selects a batch of countries to update
- *   - Runs OpenAI web research for each country
+ *   - Processes ALL countries in the database
+ *   - Runs OpenAI research for each country (refreshes existing data)
  *   - Extracts structured source signals
  *   - Calculates updated metrics
  *   - Stores results in database
@@ -67,22 +67,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get countries that need updating
-    // Prioritize countries with no recent data or oldest data
+    // Get ALL countries - process every country every week
     const { data: countries, error: countriesError } = await supabase
       .from("countries")
-      .select(
-        `
-        iso3,
-        name,
-        country_metric_snapshots (
-          updated_at
-        )
-      `
-      )
+      .select("iso3, name")
       .not("iso3", "is", null)
-      .order("name", { ascending: true })
-      .limit(100);
+      .order("name", { ascending: true });
 
     if (countriesError) {
       console.error("Failed to fetch countries:", countriesError);
@@ -101,35 +91,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Sort by last update (oldest first, null = never updated = highest priority)
-    const sortedCountries = countries
-      .map((c) => ({
-        iso3: c.iso3 as string,
-        name: c.name,
-        lastUpdated: c.country_metric_snapshots?.[0]?.updated_at || null,
-      }))
-      .sort((a, b) => {
-        if (!a.lastUpdated && !b.lastUpdated) return 0;
-        if (!a.lastUpdated) return -1;
-        if (!b.lastUpdated) return 1;
-        return (
-          new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime()
-        );
-      })
-      .slice(0, BATCH_SIZE);
-
     let processedCount = 0;
     const errors: string[] = [];
+    const totalCountries = countries?.length || 0;
 
-    // Process each country
-    for (const country of sortedCountries) {
+    // Process ALL countries
+    for (const country of countries || []) {
       try {
-        console.log(`Researching ${country.name} (${country.iso3})...`);
+        console.log(
+          `[${processedCount + 1}/${totalCountries}] Researching ${country.name} (${country.iso3})...`
+        );
 
         // Run OpenAI research
-        const research = await researchCountry(country.name, country.iso3);
+        const research = await researchCountry(
+          country.name,
+          country.iso3 as string
+        );
 
-        // Validate research quality
+        // Validate research quality - skip if very low quality
         if (!validateResearchOutput(research)) {
           console.log(`Skipping ${country.name}: Low quality research output`);
           continue;
@@ -159,7 +138,7 @@ export async function GET(request: NextRequest) {
         currentMonth.setDate(1);
         const periodMonth = currentMonth.toISOString().split("T")[0];
 
-        // Upsert metric snapshot
+        // Upsert metric snapshot (replaces existing data for this month)
         await supabase.from("country_metric_snapshots").upsert(
           {
             country_iso3: country.iso3,
@@ -187,7 +166,13 @@ export async function GET(request: NextRequest) {
         );
 
         processedCount++;
-        console.log(`Completed ${country.name}`);
+        console.log(
+          `Completed ${country.name}: Agent GDP = ${
+            metrics.agent_gdp_usd_month
+              ? `$${(metrics.agent_gdp_usd_month / 1000000).toFixed(1)}M`
+              : "No data"
+          }`
+        );
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
         console.error(`Error processing ${country.name}:`, message);
@@ -208,7 +193,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       status: "completed",
+      total_countries: totalCountries,
       countries_processed: processedCount,
+      countries_failed: errors.length,
       errors: errors.length > 0 ? errors : undefined,
       timestamp: new Date().toISOString(),
     });

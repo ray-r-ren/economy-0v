@@ -3,8 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { researchCountry } from "@/lib/openai/researchCountry";
 import { calculateCountryMetrics } from "@/lib/metrics/calculateCountryMetrics";
 
-// This endpoint allows manual triggering of research for testing/initial data population
-// In production, use proper authentication
+// Admin endpoint to manually trigger research for ALL countries
+// Use this to run initial data population or force a refresh
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -13,15 +13,16 @@ export const maxDuration = 300; // 5 minutes max for Vercel
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const limit = parseInt(searchParams.get("limit") || "5", 10);
   const region = searchParams.get("region") || null;
-  const skipExisting = searchParams.get("skipExisting") !== "false";
   
   // Simple admin key check (set ADMIN_KEY in env vars for security)
   const adminKey = searchParams.get("key");
   const expectedKey = process.env.ADMIN_KEY || process.env.CRON_SECRET;
   
-  if (expectedKey && adminKey !== expectedKey) {
+  // In preview/dev, allow access without key for testing
+  const isDev = process.env.NODE_ENV === "development" || !expectedKey;
+  
+  if (!isDev && adminKey !== expectedKey) {
     return NextResponse.json(
       { error: "Unauthorized. Add ?key=YOUR_ADMIN_KEY to the URL" },
       { status: 401 }
@@ -39,16 +40,17 @@ export async function GET(request: NextRequest) {
   const results: Array<{
     country: string;
     iso3: string;
-    status: "success" | "error" | "skipped";
+    status: "success" | "error";
     agentGdp?: string;
     error?: string;
   }> = [];
 
   try {
-    // Get countries to research
+    // Get ALL countries to research
     let query = supabase
       .from("countries")
       .select("name, iso3, region")
+      .not("iso3", "is", null)
       .order("name", { ascending: true });
 
     if (region) {
@@ -61,34 +63,13 @@ export async function GET(request: NextRequest) {
       throw new Error(`Failed to fetch countries: ${countriesError.message}`);
     }
 
-    // If skipExisting, filter out countries that already have data
-    let countriesToProcess = countries || [];
-    
-    if (skipExisting) {
-      const { data: existingSnapshots } = await supabase
-        .from("country_metric_snapshots")
-        .select("country_iso3");
-      
-      const existingIso3s = new Set(
-        (existingSnapshots || []).map((s) => s.country_iso3)
-      );
-      
-      countriesToProcess = countriesToProcess.filter(
-        (c) => !existingIso3s.has(c.iso3)
-      );
-    }
+    const countriesToProcess = countries || [];
+    const totalCountries = countriesToProcess.length;
 
-    // Limit the number of countries to process
-    const batch = countriesToProcess.slice(0, Math.min(limit, 20)); // Max 20 per request
-
-    if (batch.length === 0) {
+    if (totalCountries === 0) {
       return NextResponse.json({
-        message: "No countries to process",
-        totalCountries: countries?.length || 0,
-        countriesWithData: skipExisting
-          ? (countries?.length || 0) - countriesToProcess.length
-          : "unknown",
-        countriesRemaining: countriesToProcess.length,
+        message: "No countries found to process",
+        totalCountries: 0,
       });
     }
 
@@ -108,10 +89,14 @@ export async function GET(request: NextRequest) {
 
     const runId = runData?.id;
 
-    // Process each country
-    for (const country of batch) {
+    // Process ALL countries
+    for (let i = 0; i < countriesToProcess.length; i++) {
+      const country = countriesToProcess[i];
+      
       try {
-        console.log(`Researching ${country.name} (${country.iso3})...`);
+        console.log(
+          `[${i + 1}/${totalCountries}] Researching ${country.name} (${country.iso3})...`
+        );
         
         // Call OpenAI to research the country
         const research = await researchCountry(country.name, country.iso3);
@@ -125,7 +110,7 @@ export async function GET(request: NextRequest) {
           .toISOString()
           .split("T")[0];
 
-        // Save metrics to database
+        // Upsert metrics (replaces existing data)
         const { error: upsertError } = await supabase
           .from("country_metric_snapshots")
           .upsert(
@@ -221,16 +206,11 @@ export async function GET(request: NextRequest) {
     const failed = results.filter((r) => r.status === "error").length;
 
     return NextResponse.json({
-      message: `Research completed: ${successful} successful, ${failed} failed`,
-      totalCountries: countries?.length || 0,
-      countriesRemaining: countriesToProcess.length - batch.length,
+      message: `Research completed for all countries: ${successful} successful, ${failed} failed`,
+      totalCountries,
+      successful,
+      failed,
       processed: results,
-      nextUrl:
-        countriesToProcess.length > batch.length
-          ? `/api/admin/run-research?limit=${limit}&skipExisting=${skipExisting}${
-              region ? `&region=${region}` : ""
-            }${adminKey ? `&key=${adminKey}` : ""}`
-          : null,
     });
   } catch (error) {
     console.error("Research error:", error);
