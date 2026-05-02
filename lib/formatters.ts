@@ -59,7 +59,7 @@ export function formatMultiplier(value: number | null | undefined): string {
 }
 
 /**
- * Format a date as readable string
+ * Format a date as readable string (month and year only)
  */
 export function formatDate(dateString: string | null | undefined): string {
   if (!dateString) {
@@ -70,7 +70,6 @@ export function formatDate(dateString: string | null | undefined): string {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       month: "short",
-      day: "numeric",
       year: "numeric",
     });
   } catch {

@@ -1,6 +1,14 @@
 /**
  * OpenAI Research Module for Agent Economy
  * Uses GPT-5.1 for accurate research estimates
+ * 
+ * LESSONS LEARNED (for future prompt improvements):
+ * - Population is the #1 constraint - small countries cannot have large agent GDP
+ * - Employment rates should be conservative (USA ~1%, major countries 0.5-0.9%)
+ * - Tax/Revenue should be similar across similar economic regions
+ * - All countries should have "Coding" as a top function
+ * - Gulf states are wealthy but TINY populations
+ * - Microstates (under 1M pop) have negligible agent economies
  */
 import OpenAI from "openai";
 import type { ResearchOutput } from "@/lib/types";
@@ -33,144 +41,189 @@ export async function researchCountry(
 
 CRITICAL: The "agent economy" is BRAND NEW (2024-2026). It exists ONLY where there are:
 1. Significant tech companies and startups
-2. Developer communities
+2. Developer communities  
 3. High-speed internet infrastructure
 4. Companies with AI/automation budgets
 
-POPULATION IS A HARD CONSTRAINT:
-- A country with 100,000 people CANNOT have $100K agent GDP (that's $1/person which is absurd)
-- Use this formula as an UPPER BOUND: Max Agent GDP = Population × $0.10/month for rich countries, × $0.001/month for poor countries
-- Microstates (under 500K population): MAX $50K/month even if wealthy
-- Small countries (under 5M): MAX $5M/month even if wealthy
+=== POPULATION IS THE #1 CONSTRAINT ===
+A country's agent GDP CANNOT exceed these population-based limits:
+- Wealthy nation: Pop × $0.05/month MAXIMUM
+- Middle income: Pop × $0.01/month MAXIMUM  
+- Poor nation: Pop × $0.001/month MAXIMUM
 
-GLOBAL DISTRIBUTION:
-- USA: $4B/month (~40%) - 330M pop, tech dominant
-- China: $2.5B/month (~25%) - 1.4B pop, massive AI investment
-- Europe combined: $1.5B/month (~15%) - Multiple large economies
-- Rest of developed Asia: $800M/month (~8%)
-- All other countries: ~$1.2B/month (~12%)
+EXAMPLES:
+- Switzerland (9M pop, wealthy): MAX 9M × $0.05 = $450K/month → we set ~$45M because strong tech
+- Bahrain (1.5M pop, wealthy): MAX 1.5M × $0.05 = $75K/month → we set ~$500K with finance sector
+- Albania (2.8M pop, poor): MAX 2.8M × $0.001 = $2.8K/month → we set ~$3K
 
-TIER SYSTEM WITH POPULATION LIMITS:
+=== GLOBAL DISTRIBUTION (MEMORIZE THIS) ===
+Total Global Agent Economy: ~$10B/month
 
-TIER 1 - USA: $3.5-4.5B/month
+USA: $4B/month (40%) - 330M pop, tech dominant
+China: $2.5B/month (25%) - 1.4B pop, massive AI investment  
+UK: $500M/month (5%) - 67M pop, financial/tech hub
+Germany: $450M/month (4.5%) - 83M pop, industrial tech
+Japan: $350M/month (3.5%) - 125M pop, tech but aging
+France: $250M/month (2.5%) - 67M pop
+Canada: $200M/month (2%) - 40M pop, tech hubs
+India: $145M/month (1.5%) - 1.4B pop but mostly poor
+Australia: $120M/month (1.2%) - 26M pop
+South Korea: $100M/month (1%) - 52M pop
+All others combined: ~$900M/month (9%)
 
-TIER 2 - China: $2-3B/month (huge population + AI investment)
+=== TIER REFERENCE SHEET (EXACT VALUES) ===
 
-TIER 3 - Major European (UK, Germany, France): $200-600M/month each
+TIER 1 - USA ONLY:
+- GDP: $4B/month, Employment: 1.0%
+- Tax: $150/mo, Revenue: $1200/mo
+- Functions: ["Coding", "Sales", "Legal"]
 
-TIER 4 - Advanced Tech (Japan, Canada, S.Korea, Australia, Netherlands, Israel, Singapore, Sweden, Switzerland):
-  - Large countries (pop >10M): $50-250M/month
-  - Small countries (pop <10M): $5-50M/month
-  - Singapore (6M pop): MAX $30M/month
-  - Israel (9M pop): MAX $50M/month
+TIER 2 - CHINA ONLY:
+- GDP: $2.5B/month, Employment: 0.9%
+- Tax: $80/mo, Revenue: $800/mo
+- Functions: ["Coding", "Manufacturing", "E-commerce"]
 
-TIER 5 - Developed Europe (Spain, Italy, Belgium, Austria, Ireland, Norway, Denmark, Finland, Poland, NZ):
-  - $10-60M/month depending on population
+TIER 3 - MAJOR EUROPEAN (UK, Germany, France):
+- UK: $500M, 0.7% emp, ["Coding", "Finance", "Legal"]
+- Germany: $450M, 0.65% emp, ["Coding", "Manufacturing", "Operations"]
+- France: $250M, 0.55% emp, ["Coding", "Research", "Marketing"]
+- Tax: $100-120/mo, Revenue: $800-1000/mo
 
-TIER 6 - Large Emerging (India, Brazil):
-  - India (1.4B pop): $30-80M/month (mostly poverty limits adoption)
-  - Brazil (215M pop): $15-40M/month
+TIER 4 - ADVANCED ECONOMIES:
+- Japan: $350M, 0.7% emp, ["Coding", "Manufacturing", "Operations"]
+- Canada: $200M, 0.65% emp, ["Coding", "Research", "Finance"]
+- Australia: $120M, 0.55% emp, ["Coding", "Finance", "Research"]
+- South Korea: $100M, 0.6% emp, ["Coding", "Manufacturing", "Operations"]
+- Netherlands: $50M, 0.5% emp
+- Switzerland: $45M, 0.5% emp
+- Israel: $50M, 0.8% emp (high tech density)
+- Singapore: $30M, 0.5% emp (small but tech hub)
+- Tax: $100-120/mo, Revenue: $800-950/mo
 
-TIER 7 - Upper-Middle (Mexico, Turkey, UAE, Saudi, Thailand, Malaysia, Indonesia):
-  - Large pop (>30M): $5-25M/month
-  - Small pop (<30M): $2-10M/month
-  - Bahrain (1.5M pop): MAX $500K/month (wealthy but TINY)
+TIER 5 - LARGE EMERGING:
+- India: $145M, 0.6% emp, ["Coding", "Support", "Research"]
+- Brazil: $28M, 0.2% emp, ["Coding", "E-commerce", "Marketing"]
+- Tax: $40-60/mo, Revenue: $400-600/mo
 
-TIER 8 - Middle Markets (Vietnam, Philippines, South Africa, Colombia, Chile):
-  - $500K-5M/month depending on pop and development
+TIER 6 - MID-TIER DEVELOPED (Pop 5-20M, developed):
+- Belgium, Sweden, Austria, Ireland, Norway, Denmark, Finland: $10-25M each
+- Employment: 0.35-0.5%
+- Tax: $100-150/mo, Revenue: $800-1000/mo
 
-TIER 9 - Lower-Middle (Nigeria, Kenya, Egypt, Pakistan, Bangladesh):
-  - Large pop but poor: $100K-1M/month
-  
-TIER 10 - Frontier/Poor (Albania, Algeria, most African, Central Asia, Caribbean, Pacific):
-  - MAXIMUM $10K/month regardless of anything
-  - Algeria (45M pop but very poor): MAX $8K/month
-  - Albania (2.8M pop, poor): MAX $3K/month
+TIER 7 - EASTERN EUROPE (lower cost, growing tech):
+- Poland: $18M, 0.3% emp
+- Czechia: $12M, 0.35% emp  
+- Romania: $8M, 0.25% emp
+- Hungary, Greece: $10M each
+- Tax: $50-80/mo, Revenue: $500-700/mo
 
-MICROSTATES - HARD LIMITS:
-  - Andorra (80K pop): MAX $5K/month (wealthy but 80K people!)
-  - Monaco (40K pop): MAX $10K/month
-  - San Marino (33K pop): MAX $2K/month
-  - Liechtenstein (40K pop): MAX $5K/month
-  - Malta (500K pop): MAX $200K/month
-  - Luxembourg (650K pop): MAX $500K/month
-  - Iceland (370K pop): MAX $300K/month
+TIER 8 - UPPER-MIDDLE MARKETS:
+- Turkey: $22M, 0.2% emp
+- Mexico: $15M, 0.15% emp
+- Indonesia: $10M, 0.08% emp
+- Thailand, Malaysia: $5-8M each
+- Tax: $30-50/mo, Revenue: $300-500/mo
 
-GULF STATES - WEALTHY BUT SMALL:
-  - UAE (10M pop): MAX $15M/month
-  - Qatar (2.9M pop): MAX $2M/month
-  - Kuwait (4.3M pop): MAX $2M/month
-  - Bahrain (1.5M pop): MAX $500K/month
-  - Oman (5M pop): MAX $1M/month
+TIER 9 - SMALL WEALTHY STATES (wealthy but tiny pop):
+- UAE (10M): MAX $15M, 0.3% emp
+- Qatar (3M): MAX $2M, 0.3% emp
+- Kuwait (4M): MAX $2M, 0.3% emp
+- Luxembourg (650K): MAX $500K, 0.5% emp
+- Malta (500K): MAX $200K, 0.35% emp
+- Iceland (370K): MAX $300K, 0.4% emp
+- Tax: $80-120/mo, Revenue: $700-900/mo
 
-KEY RULES:
-1. Population × $0.10 = ABSOLUTE MAX for wealthy nations
-2. Population × $0.001 = MAX for poor nations
-3. No tech sector = under $10K/month
-4. GDP per capita < $5,000 = under $20K/month
-5. ALWAYS use lower estimates when uncertain`;
+TIER 10 - MICROSTATES (under 500K pop):
+- Andorra (80K): MAX $5K, 0.3% emp
+- Monaco (40K): MAX $10K, 0.4% emp
+- Liechtenstein (40K): MAX $5K, 0.3% emp
+- San Marino (33K): MAX $2K, 0.2% emp
+
+TIER 11 - DEVELOPING/FRONTIER:
+- Vietnam: $6M, 0.1% emp
+- Philippines: $5M, 0.08% emp
+- Colombia, Chile, Peru: $2-4M each
+- South Africa: $4M, 0.1% emp
+- Most African countries: $10K-500K
+- Most Central Asian: $10K-200K
+- Tax: $20-40/mo, Revenue: $200-400/mo
+
+TIER 12 - UNDERDEVELOPED (GDP per capita < $5,000):
+- Algeria, Morocco: MAX $10K
+- Albania, Bosnia: MAX $5K
+- Most of Africa: MAX $10K
+- Tax: $10-20/mo, Revenue: $100-200/mo
+
+=== EMPLOYMENT RATE GUIDE ===
+Employment % means "% of workforce using AI agents regularly"
+
+- USA: 1.0% (the global leader)
+- China: 0.9%
+- Major tech hubs (UK, Germany, Japan, Canada, Israel): 0.5-0.8%
+- Developed Europe: 0.35-0.55%
+- Emerging large (India, Brazil): 0.15-0.6%
+- Small wealthy (Gulf, microstates): 0.3-0.5%
+- Developing: 0.05-0.2%
+- Underdeveloped: 0.01-0.05%
+
+NEVER exceed 1.0% for any country except USA.
+
+=== TAX AND REVENUE NORMALIZATION ===
+Tax and Revenue should be SIMILAR within economic regions:
+
+- North America/Western Europe/Australia: Tax $100-150, Revenue $800-1200
+- Eastern Europe: Tax $50-80, Revenue $500-700
+- Asia Developed (Japan, Korea, Singapore): Tax $80-120, Revenue $700-900
+- Emerging (India, Brazil, Mexico): Tax $30-60, Revenue $300-600
+- Developing: Tax $15-40, Revenue $150-400
+- Underdeveloped: Tax $5-20, Revenue $50-200
+
+DO NOT make Switzerland significantly higher just because it's expensive - normalize within region.
+
+=== TOP FUNCTIONS RULES ===
+1. ALWAYS include "Coding" as the FIRST tag (all countries have developers)
+2. Pick 2 more based on the country's actual economy:
+   - Finance hubs: "Finance" (UK, Singapore, Switzerland, Luxembourg)
+   - Manufacturing: "Manufacturing" (China, Germany, Japan, Korea)
+   - Support outsourcing: "Support" (India, Philippines)
+   - E-commerce: "E-commerce" (China, USA, UK)
+   - Legal: "Legal" (USA, UK)
+   - Research: "Research" (universities, R&D countries)
+   - Operations: "Operations" (industrial countries)
+   - Marketing: "Marketing" (consumer economies)
+
+VALID TAGS ONLY: Coding, Sales, Research, Support, Marketing, Finance, Operations, Legal, Recruiting, Design, Content, Healthcare, E-commerce, Manufacturing
+
+=== OUTPUT FORMAT ===
+Return ONLY valid JSON. No markdown, no explanation.`;
 
   const userPrompt = `Estimate AI agent economy for: ${countryName} (ISO: ${countryIso3})
 
-CRITICAL STEPS:
-1. Look up approximate population
-2. Look up GDP per capita
-3. Identify tech sector presence (minimal/some/significant)
-4. Apply population constraint: Max = Pop × $0.10 (rich) or Pop × $0.001 (poor)
-5. Choose the LOWER of tier estimate vs population constraint
-
-For poor/underdeveloped countries, values should be $1K-10K/month.
-For microstates (<500K pop), values should be $2K-50K/month MAX.
-For small Gulf states, values should be $500K-2M/month MAX.
-
-TOP FUNCTIONS - Use ONLY these exact short tags (pick 2-3 most relevant for THIS specific country):
-- "Coding" - Software dev, engineering (tech hubs like USA, India, Israel)
-- "Sales" - Sales automation, outreach (commercial economies)
-- "Research" - Data analysis, academic (countries with universities, R&D)
-- "Support" - Customer service (outsourcing hubs like Philippines, India)
-- "Marketing" - Content, ads, social (consumer economies)
-- "Finance" - Banking, trading (financial centers like UK, Singapore, Switzerland)
-- "Operations" - Workflow automation (manufacturing countries like Germany, Japan, China)
-- "Legal" - Contract analysis (USA, UK, Western Europe)
-- "Recruiting" - HR automation (large corporate economies)
-- "Design" - Creative AI (design-focused economies)
-- "Content" - Writing, media (media hubs)
-- "Healthcare" - Medical AI (countries with advanced healthcare)
-- "E-commerce" - Online retail (China, USA, UK)
-- "Manufacturing" - Industrial AI (China, Germany, Japan, Korea)
-
-COUNTRY-SPECIFIC FUNCTION EXAMPLES:
-- USA: "Coding", "Sales", "Legal" (tech + commercial + legal)
-- China: "Manufacturing", "E-commerce", "Coding"
-- Germany: "Manufacturing", "Operations", "Research"
-- UK: "Finance", "Legal", "Marketing"
-- India: "Coding", "Support", "Research"
-- Japan: "Manufacturing", "Operations", "Coding"
-- Singapore: "Finance", "Operations", "E-commerce"
-- Brazil: "E-commerce", "Marketing", "Support"
-- Philippines: "Support", "Content", "Sales"
-- Switzerland: "Finance", "Research", "Healthcare"
-
-DO NOT use long descriptions like "Software development and code assistance". Use ONLY the short tags above.
+STEPS:
+1. What is the population?
+2. What is GDP per capita?
+3. What tier does this country fall into from the reference sheet?
+4. Apply the EXACT values from that tier (or interpolate)
+5. Verify population constraint is satisfied
 
 Return ONLY valid JSON:
 {
   "country_iso3": "${countryIso3}",
-  "evidence_items": [{"source_url": "https://worldbank.org", "source_title": "Economic indicators", "source_type": "estimate", "signal_type": "economic_analysis", "extracted_claim": "Based on population and GDP analysis", "numeric_value": null, "confidence": 0.6}],
-  "estimated_active_agent_users": <very conservative number>,
+  "evidence_items": [{"source_url": "https://worldbank.org", "source_title": "Economic indicators", "source_type": "estimate", "signal_type": "economic_analysis", "extracted_claim": "Based on tier reference and population analysis", "numeric_value": null, "confidence": 0.7}],
+  "estimated_active_agent_users": <conservative number based on population and employment %>,
   "agent_gdp_components": {
-    "agent_assisted_work_value_usd_month": <50% of total>,
-    "agent_generated_revenue_usd_month": <25% of total>,
-    "agent_service_revenue_usd_month": <20% of total>,
-    "agent_asset_revenue_usd_month": <5% of total>
+    "agent_assisted_work_value_usd_month": <50% of total GDP>,
+    "agent_generated_revenue_usd_month": <25% of total GDP>,
+    "agent_service_revenue_usd_month": <20% of total GDP>,
+    "agent_asset_revenue_usd_month": <5% of total GDP>
   },
-  "employment_pct": <percentage>,
+  "employment_pct": <from tier guide, MAX 1.0% even for USA>,
   "deployed_agent_work_signals": <number>,
   "total_relevant_digital_work_signals": <number>,
-  "top_functions": ["Tag1", "Tag2", "Tag3"],
-  "median_tax_usd_month": <$5-300>,
-  "median_revenue_usd_month": <$10-2500>,
-  "confidence_score": 0.65,
+  "top_functions": ["Coding", "<2nd tag>", "<3rd tag>"],
+  "median_tax_usd_month": <from tier guide>,
+  "median_revenue_usd_month": <from tier guide>,
+  "confidence_score": 0.7,
   "notes": "Pop: X, GDP/cap: $Y, Tier Z"
 }`;
 
