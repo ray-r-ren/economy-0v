@@ -138,39 +138,39 @@ export const COLUMN_CAPTIONS: ColumnInfo[] = [
     key: "agent_gdp",
     label: "Agent GDP",
     caption:
-      "Estimated monthly economic value created by agent work in this country.",
+      "Monthly value created through agent-driven work.",
   },
   {
     key: "employment",
     label: "Employment",
     caption:
-      "Percentage of observable digital work signals showing deployed agent use.",
+      "Share of digital work activity involving deployed agent workflows.",
   },
   {
     key: "top_functions",
     label: "Top Functions",
-    caption: "Most active deployed agent work categories in this country.",
+    caption: "Leading categories of agent-driven work in this country.",
   },
   {
     key: "median_tax",
     label: "Median Tax",
     caption:
-      "Median monthly cost of an active user's agent stack, including model subscriptions, agent tools, AI apps, and related software.",
+      "Median monthly cost of the agent stack for active users.",
   },
   {
     key: "median_revenue",
     label: "Median Revenue",
     caption:
-      "Median monthly revenue directly attributed to agent-enabled work, including services, agent-run businesses, agent-built products, bounties, workflows, templates, and reusable assets.",
+      "Median monthly revenue generated through agent-enabled work and businesses.",
   },
   {
     key: "productivity",
     label: "Productivity",
-    caption: "Estimated Agent GDP divided by total monthly agent tool spend.",
+    caption: "Economic value generated per dollar of agent stack cost.",
   },
   {
     key: "updated",
     label: "Updated",
-    caption: "Date when the latest country metric snapshot was last updated.",
+    caption: "Latest refresh of the country snapshot.",
   },
 ];
