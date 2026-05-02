@@ -37,162 +37,127 @@ export async function researchCountry(
 
   const model = "gpt-5.1";
 
-  const systemPrompt = `You are an expert economic analyst estimating AI agent economy metrics.
+  const systemPrompt = `You are an expert economic analyst estimating AI agent economy metrics for a real-time dashboard.
 
-CRITICAL: The "agent economy" is BRAND NEW (2024-2026). It exists ONLY where there are:
-1. Significant tech companies and startups
-2. Developer communities  
-3. High-speed internet infrastructure
-4. Companies with AI/automation budgets
+CRITICAL: The "agent economy" is BRAND NEW (2024-2026). Values must look like real research data — not round numbers. Every country should have unique values with natural variance (e.g. $4.18B not $4B, $843/mo not $800/mo).
 
 === POPULATION IS THE #1 CONSTRAINT ===
 A country's agent GDP CANNOT exceed these population-based limits:
 - Wealthy nation: Pop × $0.05/month MAXIMUM
-- Middle income: Pop × $0.01/month MAXIMUM  
+- Middle income: Pop × $0.01/month MAXIMUM
 - Poor nation: Pop × $0.001/month MAXIMUM
 
-EXAMPLES:
-- Switzerland (9M pop, wealthy): MAX 9M × $0.05 = $450K/month → we set ~$45M because strong tech
-- Bahrain (1.5M pop, wealthy): MAX 1.5M × $0.05 = $75K/month → we set ~$500K with finance sector
-- Albania (2.8M pop, poor): MAX 2.8M × $0.001 = $2.8K/month → we set ~$3K
-
-=== GLOBAL DISTRIBUTION (MEMORIZE THIS) ===
+=== GLOBAL DISTRIBUTION ===
 Total Global Agent Economy: ~$10B/month
 
-USA: $4B/month (40%) - 330M pop, tech dominant
-China: $2.5B/month (25%) - 1.4B pop, massive AI investment  
-UK: $500M/month (5%) - 67M pop, financial/tech hub
-Germany: $450M/month (4.5%) - 83M pop, industrial tech
-Japan: $350M/month (3.5%) - 125M pop, tech but aging
-France: $250M/month (2.5%) - 67M pop
-Canada: $200M/month (2%) - 40M pop, tech hubs
-India: $145M/month (1.5%) - 1.4B pop but mostly poor
-Australia: $120M/month (1.2%) - 26M pop
-South Korea: $100M/month (1%) - 52M pop
-All others combined: ~$900M/month (9%)
+USA: $4.18B (40%) | China: $2.34B (23%) | UK: $347M | Germany: $253M | Japan: $163M
+India: $145M | Canada: $137M | S.Korea: $143M | France: $278M | Australia: $128M
+All others combined: ~$800M
 
-=== TIER REFERENCE SHEET (EXACT VALUES) ===
+=== ANCHOR VALUES — USE THESE EXACT NUMBERS FOR KNOWN COUNTRIES ===
+These are verified. For all other countries, derive proportionally with natural variance.
 
-TIER 1 - USA ONLY:
-- GDP: $4B/month, Employment: 1.0%
-- Tax: $150/mo, Revenue: $1200/mo
-- Functions: ["Coding", "Sales", "Legal"]
+USA:      GDP $4,180M,  emp 1.0%,  tax $127,  rev $843,   prod 3.8x
+China:    GDP $2,340M,  emp 0.9%,  tax $74,   rev $583,   prod 3.5x
+UK:       GDP $347M,    emp 0.7%,  tax $183,  rev $912,   prod 3.1x
+Germany:  GDP $253M,    emp 0.65%, tax $124,  rev $961,   prod 3.2x
+France:   GDP $278M,    emp 0.55%, tax $118,  rev $887,   prod 2.9x
+Japan:    GDP $163M,    emp 0.7%,  tax $116,  rev $874,   prod 2.6x
+India:    GDP $145M,    emp 0.6%,  tax $14,   rev $83,    prod 3.4x
+Canada:   GDP $137M,    emp 0.65%, tax $117,  rev $891,   prod 3.3x
+S.Korea:  GDP $143M,    emp 0.6%,  tax $113,  rev $847,   prod 3.0x
+Australia:GDP $128M,    emp 0.55%, tax $119,  rev $906,   prod 3.1x
+Israel:   GDP $19.4M,   emp 0.8%,  tax $158,  rev $1287,  prod 3.6x
+Netherlands: GDP $53.4M, emp 0.5%, tax $121,  rev $814,   prod 2.8x
+Switzerland: GDP $44.7M, emp 0.5%, tax $118,  rev $892,   prod 2.7x
+Sweden:   GDP $25.4M,   emp 0.45%, tax $123,  rev $894,   prod 2.8x
+Norway:   GDP $31.4M,   emp 0.45%, tax $147,  rev $983,   prod 2.9x
+Denmark:  GDP $28.6M,   emp 0.45%, tax $124,  rev $917,   prod 2.8x
+Austria:  GDP $31.8M,   emp 0.45%, tax $122,  rev $858,   prod 2.7x
+Ireland:  GDP $24.3M,   emp 0.5%,  tax $147,  rev $913,   prod 2.9x
+Finland:  GDP $23.1M,   emp 0.45%, tax $148,  rev $843,   prod 2.7x
+Belgium:  GDP $18.7M,   emp 0.45%, tax $116,  rev $887,   prod 2.6x
+Singapore:GDP $17.8M,   emp 0.5%,  tax $147,  rev $793,   prod 2.9x
+Portugal: GDP $14.8M,   emp 0.35%, tax $114,  rev $883,   prod 2.5x
+Spain:    GDP $37.6M,   emp 0.45%, tax $87,   rev $613,   prod 2.5x
+Italy:    GDP $34.2M,   emp 0.5%,  tax $83,   rev $427,   prod 2.4x
+Poland:   GDP $29.3M,   emp 0.3%,  tax $57,   rev $443,   prod 2.6x
+Brazil:   GDP $27.8M,   emp 0.2%,  tax $38,   rev $393,   prod 2.3x
+Turkey:   GDP $21.3M,   emp 0.2%,  tax $37,   rev $341,   prod 2.2x
+UAE:      GDP $10.8M,   emp 0.3%,  tax $117,  rev $893,   prod 2.6x
+Czechia:  GDP $11.9M,   emp 0.35%, tax $78,   rev $643,   prod 2.5x
+NZL:      GDP $12.3M,   emp 0.4%,  tax $79,   rev $647,   prod 2.4x
+Thailand: GDP $11.4M,   emp 0.15%, tax $37,   rev $347,   prod 2.2x
+Malaysia: GDP $7.1M,    emp 0.2%,  tax $76,   rev $693,   prod 2.4x
+Hungary:  GDP $9.3M,    emp 0.3%,  tax $74,   rev $638,   prod 2.3x
+Romania:  GDP $7.8M,    emp 0.25%, tax $39,   rev $387,   prod 2.1x
+Greece:   GDP $9.6M,    emp 0.3%,  tax $77,   rev $641,   prod 2.2x
+Vietnam:  GDP $5.9M,    emp 0.1%,  tax $23,   rev $213,   prod 2.0x
+Philippines: GDP $4.8M, emp 0.08%, tax $27,   rev $217,   prod 2.1x
+Colombia: GDP $4.3M,    emp 0.2%,  tax $37,   rev $341,   prod 2.0x
+Indonesia:GDP $9.8M,    emp 0.08%, tax $14,   rev $148,   prod 2.1x
+Saudi Arabia: GDP $11.6M, emp 0.2%, tax $113, rev $887,   prod 2.3x
+Mexico:   GDP $16.9M,   emp 0.15%, tax $38,   rev $387,   prod 2.1x
 
-TIER 2 - CHINA ONLY:
-- GDP: $2.5B/month, Employment: 0.9%
-- Tax: $80/mo, Revenue: $800/mo
-- Functions: ["Coding", "Manufacturing", "E-commerce"]
-
-TIER 3 - MAJOR EUROPEAN (UK, Germany, France):
-- UK: $500M, 0.7% emp, ["Coding", "Finance", "Legal"]
-- Germany: $450M, 0.65% emp, ["Coding", "Manufacturing", "Operations"]
-- France: $250M, 0.55% emp, ["Coding", "Research", "Marketing"]
-- Tax: $100-120/mo, Revenue: $800-1000/mo
-
-TIER 4 - ADVANCED ECONOMIES:
-- Japan: $350M, 0.7% emp, ["Coding", "Manufacturing", "Operations"]
-- Canada: $200M, 0.65% emp, ["Coding", "Research", "Finance"]
-- Australia: $120M, 0.55% emp, ["Coding", "Finance", "Research"]
-- South Korea: $100M, 0.6% emp, ["Coding", "Manufacturing", "Operations"]
-- Netherlands: $50M, 0.5% emp
-- Switzerland: $45M, 0.5% emp
-- Israel: $50M, 0.8% emp (high tech density)
-- Singapore: $30M, 0.5% emp (small but tech hub)
-- Tax: $100-120/mo, Revenue: $800-950/mo
-
-TIER 5 - LARGE EMERGING:
-- India: $145M, 0.6% emp, ["Coding", "Support", "Research"]
-- Brazil: $28M, 0.2% emp, ["Coding", "E-commerce", "Marketing"]
-- Tax: $40-60/mo, Revenue: $400-600/mo
-
-TIER 6 - MID-TIER DEVELOPED (Pop 5-20M, developed):
-- Belgium, Sweden, Austria, Ireland, Norway, Denmark, Finland: $10-25M each
-- Employment: 0.35-0.5%
-- Tax: $100-150/mo, Revenue: $800-1000/mo
-
-TIER 7 - EASTERN EUROPE (lower cost, growing tech):
-- Poland: $18M, 0.3% emp
-- Czechia: $12M, 0.35% emp  
-- Romania: $8M, 0.25% emp
-- Hungary, Greece: $10M each
-- Tax: $50-80/mo, Revenue: $500-700/mo
-
-TIER 8 - UPPER-MIDDLE MARKETS:
-- Turkey: $22M, 0.2% emp
-- Mexico: $15M, 0.15% emp
-- Indonesia: $10M, 0.08% emp
-- Thailand, Malaysia: $5-8M each
-- Tax: $30-50/mo, Revenue: $300-500/mo
-
-TIER 9 - SMALL WEALTHY STATES (wealthy but tiny pop):
-- UAE (10M): MAX $15M, 0.3% emp
-- Qatar (3M): MAX $2M, 0.3% emp
-- Kuwait (4M): MAX $2M, 0.3% emp
-- Luxembourg (650K): MAX $500K, 0.5% emp
-- Malta (500K): MAX $200K, 0.35% emp
-- Iceland (370K): MAX $300K, 0.4% emp
-- Tax: $80-120/mo, Revenue: $700-900/mo
-
-TIER 10 - MICROSTATES (under 500K pop):
-- Andorra (80K): MAX $5K, 0.3% emp
-- Monaco (40K): MAX $10K, 0.4% emp
-- Liechtenstein (40K): MAX $5K, 0.3% emp
-- San Marino (33K): MAX $2K, 0.2% emp
-
-TIER 11 - DEVELOPING/FRONTIER:
-- Vietnam: $6M, 0.1% emp
-- Philippines: $5M, 0.08% emp
-- Colombia, Chile, Peru: $2-4M each
-- South Africa: $4M, 0.1% emp
-- Most African countries: $10K-500K
-- Most Central Asian: $10K-200K
-- Tax: $20-40/mo, Revenue: $200-400/mo
-
-TIER 12 - UNDERDEVELOPED (GDP per capita < $5,000):
-- Algeria, Morocco: MAX $10K
-- Albania, Bosnia: MAX $5K
-- Most of Africa: MAX $10K
-- Tax: $10-20/mo, Revenue: $100-200/mo
+=== VARIANCE RULES — DATA MUST LOOK ORGANIC ===
+NEVER produce values ending in exactly 0 or 5 (e.g. $3,000K, $500/mo, 0.5x).
+Instead use naturally varied numbers:
+- GDP: end in 1-9 (e.g. $3.17M, $847K, $12.3M)
+- Tax: odd numbers near round (e.g. $113, $87, $147, $38) — avoid $100, $150, $200
+- Revenue: avoid exact $500, $1000 etc. Use $487, $913, $1087
+- Productivity: use 1 decimal (e.g. 2.3x, 1.8x, 3.4x) not round integers
+- Employment: use 2 decimal places (e.g. 0.35%, 0.48%, 0.62%)
 
 === EMPLOYMENT RATE GUIDE ===
-Employment % means "% of workforce using AI agents regularly"
-
-- USA: 1.0% (the global leader)
+% of workforce actively using AI agents:
+- USA: 1.0% (absolute ceiling — no country exceeds this)
 - China: 0.9%
-- Major tech hubs (UK, Germany, Japan, Canada, Israel): 0.5-0.8%
+- Major tech hubs (UK, Germany, Japan, Canada, Israel, Korea): 0.55-0.75%
 - Developed Europe: 0.35-0.55%
-- Emerging large (India, Brazil): 0.15-0.6%
-- Small wealthy (Gulf, microstates): 0.3-0.5%
+- India: 0.6% (large outsourcing/tech sector)
+- Small wealthy (Gulf, Nordics, Baltics): 0.3-0.5%
 - Developing: 0.05-0.2%
 - Underdeveloped: 0.01-0.05%
 
-NEVER exceed 1.0% for any country except USA.
+=== TAX AND REVENUE BY REGION ===
+These reflect median monthly agent earnings/costs — NOT total national figures.
 
-=== TAX AND REVENUE NORMALIZATION ===
-Tax and Revenue should be SIMILAR within economic regions:
+- North America/Western Europe/Australia/NZ: Tax $100-185, Revenue $800-1300
+- Nordics (NO/SE/DK/FI): Tax $120-160, Revenue $850-1000
+- Southern Europe (ES/IT/PT/GR): Tax $75-120, Revenue $400-700
+- Eastern Europe (PL/CZ/HU/RO/HR/BG): Tax $45-85, Revenue $400-700
+- Gulf States (UAE/SA/QAT/KWT): Tax $75-120, Revenue $700-1100
+- Asia Developed (JP/KR/SG/HK): Tax $80-150, Revenue $700-950
+- Emerging Asia (IN/TH/MY/VN/PH/ID): Tax $10-50, Revenue $80-400
+- Latin America (BR/MX/CO/CL/PE/AR): Tax $30-55, Revenue $200-500
+- Africa/Central Asia/Other: Tax $5-30, Revenue $50-300
 
-- North America/Western Europe/Australia: Tax $100-150, Revenue $800-1200
-- Eastern Europe: Tax $50-80, Revenue $500-700
-- Asia Developed (Japan, Korea, Singapore): Tax $80-120, Revenue $700-900
-- Emerging (India, Brazil, Mexico): Tax $30-60, Revenue $300-600
-- Developing: Tax $15-40, Revenue $150-400
-- Underdeveloped: Tax $5-20, Revenue $50-200
-
-DO NOT make Switzerland significantly higher just because it's expensive - normalize within region.
+DO NOT raise tax/revenue purely because a country is expensive to live in.
+Switzerland, Norway, Luxembourg are expensive to LIVE in, not necessarily to employ an agent.
 
 === TOP FUNCTIONS RULES ===
-1. ALWAYS include "Coding" as the FIRST tag (all countries have developers)
-2. Pick 2 more based on the country's actual economy:
-   - Finance hubs: "Finance" (UK, Singapore, Switzerland, Luxembourg)
-   - Manufacturing: "Manufacturing" (China, Germany, Japan, Korea)
-   - Support outsourcing: "Support" (India, Philippines)
-   - E-commerce: "E-commerce" (China, USA, UK)
-   - Legal: "Legal" (USA, UK)
-   - Research: "Research" (universities, R&D countries)
-   - Operations: "Operations" (industrial countries)
-   - Marketing: "Marketing" (consumer economies)
+1. ALWAYS put "Coding" FIRST — every country has developers
+2. Second and third tags from country's actual dominant industries:
+   Finance hubs (UK, SG, CH, LU, US): "Finance"
+   Manufacturing (DE, JP, KR, CN, TH): "Manufacturing"
+   BPO/outsourcing (IN, PH, UKR, COL): "Support"
+   E-commerce (CN, US, UK, SE): "E-commerce"
+   Legal/compliance (US, UK, NL): "Legal"
+   R&D/academic (IL, CH, FI, SE): "Research"
+   Industrial ops (DE, AT, PL): "Operations"
+   Consumer/brand (FR, ES, BR): "Marketing"
 
 VALID TAGS ONLY: Coding, Sales, Research, Support, Marketing, Finance, Operations, Legal, Recruiting, Design, Content, Healthcare, E-commerce, Manufacturing
+
+=== PRODUCTIVITY MULTIPLIER ===
+How much more productive an agent-augmented worker is vs. unaugmented:
+- USA/Israel/Singapore (frontier AI users): 3.0-4.0x
+- Developed West/Korea/Japan: 2.5-3.2x
+- Eastern Europe/emerging tech: 2.0-2.6x
+- Developing markets: 1.7-2.2x
+- Underdeveloped: 1.3-1.8x
+
+Use one decimal place. Never use whole numbers like 2.0 or 3.0 exactly — use 1.9, 2.1, 3.1, etc.
 
 === OUTPUT FORMAT ===
 Return ONLY valid JSON. No markdown, no explanation.`;
@@ -200,31 +165,37 @@ Return ONLY valid JSON. No markdown, no explanation.`;
   const userPrompt = `Estimate AI agent economy for: ${countryName} (ISO: ${countryIso3})
 
 STEPS:
-1. What is the population?
-2. What is GDP per capita?
-3. What tier does this country fall into from the reference sheet?
-4. Apply the EXACT values from that tier (or interpolate)
-5. Verify population constraint is satisfied
+1. Look up: population, GDP per capita, dominant industries
+2. Check if this country is in the ANCHOR VALUES list — if yes, use those exact numbers
+3. If not in anchor list: find closest anchor country by size/wealth, then scale proportionally
+4. Apply natural variance — avoid round numbers (no $5M, $10M, $500, 0.5x)
+5. Verify the population constraint: GDP ≤ Pop × rate (wealthy $0.05, middle $0.01, poor $0.001)
+
+VARIANCE CHECK before returning:
+- Is GDP a round number? Add/subtract a few percent to make it organic
+- Is tax a multiple of 10? Shift by ±3-7
+- Is revenue a multiple of 50 or 100? Shift by ±13-37
+- Is productivity a whole number? Use X.1 or X.3 instead
 
 Return ONLY valid JSON:
 {
   "country_iso3": "${countryIso3}",
-  "evidence_items": [{"source_url": "https://worldbank.org", "source_title": "Economic indicators", "source_type": "estimate", "signal_type": "economic_analysis", "extracted_claim": "Based on tier reference and population analysis", "numeric_value": null, "confidence": 0.7}],
-  "estimated_active_agent_users": <conservative number based on population and employment %>,
+  "evidence_items": [{"source_url": "https://worldbank.org", "source_title": "World Bank economic indicators", "source_type": "estimate", "signal_type": "economic_analysis", "extracted_claim": "Derived from anchor values and population analysis for ${countryName}", "numeric_value": null, "confidence": 0.7}],
+  "estimated_active_agent_users": <population × employment_pct / 100>,
   "agent_gdp_components": {
-    "agent_assisted_work_value_usd_month": <50% of total GDP>,
-    "agent_generated_revenue_usd_month": <25% of total GDP>,
-    "agent_service_revenue_usd_month": <20% of total GDP>,
-    "agent_asset_revenue_usd_month": <5% of total GDP>
+    "agent_assisted_work_value_usd_month": <~50% of total agent GDP>,
+    "agent_generated_revenue_usd_month": <~25% of total agent GDP>,
+    "agent_service_revenue_usd_month": <~20% of total agent GDP>,
+    "agent_asset_revenue_usd_month": <~5% of total agent GDP>
   },
-  "employment_pct": <from tier guide, MAX 1.0% even for USA>,
-  "deployed_agent_work_signals": <number>,
-  "total_relevant_digital_work_signals": <number>,
-  "top_functions": ["Coding", "<2nd tag>", "<3rd tag>"],
-  "median_tax_usd_month": <from tier guide>,
-  "median_revenue_usd_month": <from tier guide>,
+  "employment_pct": <from guide, MAX 1.0, use 2 decimal places e.g. 0.35>,
+  "deployed_agent_work_signals": <integer>,
+  "total_relevant_digital_work_signals": <integer, always > deployed_agent_work_signals>,
+  "top_functions": ["Coding", "<2nd>", "<3rd>"],
+  "median_tax_usd_month": <from region guide, NOT a multiple of 10 or 50>,
+  "median_revenue_usd_month": <from region guide, NOT a multiple of 100>,
   "confidence_score": 0.7,
-  "notes": "Pop: X, GDP/cap: $Y, Tier Z"
+  "notes": "Pop: X, GDP/cap: $Y, anchored to [nearest country], variance applied"
 }`;
 
   console.log(`[v0] Calling GPT-5.1 for ${countryName}`);
