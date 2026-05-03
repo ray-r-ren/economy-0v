@@ -12,8 +12,8 @@ export const maxDuration = 300;
 /**
  * GET /api/cron/update-economy
  *
- * Protected Vercel Cron endpoint that updates economy data for ALL countries.
- * Called weekly by Vercel Cron at 5:00 AM UTC on Sundays.
+ * Manually-invoked protected endpoint that updates economy data for ALL countries.
+ * Automatic Vercel cron scheduling has been removed; trigger this route manually when needed.
  *
  * Behavior:
  * - If RUN_RESEARCH_CRON is not "true", returns a safe message without calling OpenAI
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         status: "skipped",
         message:
-          "Research cron is disabled. Set RUN_RESEARCH_CRON=true to enable.",
+          "Research run is disabled. Set RUN_RESEARCH_CRON=true only when you want to run it manually.",
         timestamp: new Date().toISOString(),
       });
     }
