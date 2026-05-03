@@ -12,8 +12,8 @@ export const maxDuration = 300;
 /**
  * GET /api/cron/update-economy
  *
- * Protected Vercel Cron endpoint that updates economy data for ALL countries.
- * Called weekly by Vercel Cron at 5:00 AM UTC on Sundays.
+ * Protected endpoint that updates economy data for ALL countries.
+ * No automatic schedule is configured; trigger this endpoint manually when needed.
  *
  * Behavior:
  * - If RUN_RESEARCH_CRON is not "true", returns a safe message without calling OpenAI
