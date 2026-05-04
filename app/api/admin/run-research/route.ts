@@ -29,6 +29,18 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Research only runs when explicitly enabled via env var
+  if (process.env.RESEARCH_ENABLED !== "true") {
+    return NextResponse.json(
+      {
+        status: "disabled",
+        message:
+          "Research is disabled. Set RESEARCH_ENABLED=true to enable.",
+      },
+      { status: 403 }
+    );
+  }
+
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(
       { error: "OPENAI_API_KEY not configured" },

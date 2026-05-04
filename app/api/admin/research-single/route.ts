@@ -25,6 +25,18 @@ export async function POST(request: Request) {
       );
     }
 
+    // Research only runs when explicitly enabled via env var
+    if (process.env.RESEARCH_ENABLED !== "true") {
+      return NextResponse.json(
+        {
+          success: false,
+          status: "disabled",
+          message: "Research is disabled. Set RESEARCH_ENABLED=true to enable.",
+        },
+        { status: 403 }
+      );
+    }
+
     // Check if OpenAI is configured
     if (!process.env.OPENAI_API_KEY) {
       console.log("[v0] OPENAI_API_KEY not configured");
